@@ -1,0 +1,23 @@
+plugins {
+    id 'application'
+}
+
+group 'org.ajani2001'
+version '1.0-SNAPSHOT'
+
+application {
+    mainClass = 'org.ajani2001.lab1.Main'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+    useJUnitPlatform()
+}
