@@ -1,20 +1,20 @@
 package org.ajani2001.lab1;
 
 import org.apache.commons.cli.*;
-import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
-import java.util.Map;
 
 public class Main {
-    public static void main(String[] args) throws IOException, CompressorException, XMLStreamException {
+    private static final Logger logger = LogManager.getLogger();
+
+    public static void main(String[] args) {
         var options = new Options();
-        options.addRequiredOption("T", "target-xml", true, "Path to the xml file");
+        options.addRequiredOption("c", "compressed-xml", true, "Path to the bz2-compressed xml file");
 
         var parser = new DefaultParser();
         CommandLine cmd;
@@ -24,25 +24,38 @@ public class Main {
             new HelpFormatter().printHelp("lab1", options);
             return;
         } catch (ParseException e) {
-            e.printStackTrace();
+            logger.fatal("Cannot parse cmd args", e);
+            System.out.println("An error has occurred");
             return;
         }
 
-        var filePath = cmd.getOptionValue("target-xml");
-        var fileInputStream = new FileInputStream(filePath);
-        var bufferedInputStream = new BufferedInputStream(fileInputStream);
-        var compressorInputStream = new CompressorStreamFactory().createCompressorInputStream(CompressorStreamFactory.BZIP2, bufferedInputStream);
-        var xmlFileReader = new InputStreamReader(compressorInputStream, StandardCharsets.UTF_8);
-        var xmlEventReader = XMLInputFactory.newFactory().createXMLEventReader(xmlFileReader);
+        var filePath = cmd.getOptionValue("compressed-xml");
+        logger.info("Creating a reader for file {}...", filePath);
+        try(var fileInputStream = new FileInputStream(filePath)) {
+            var bufferedInputStream = new BufferedInputStream(fileInputStream);
+            var compressorInputStream = new CompressorStreamFactory().createCompressorInputStream(CompressorStreamFactory.BZIP2, bufferedInputStream);
+            var xmlFileReader = new InputStreamReader(compressorInputStream, StandardCharsets.UTF_8);
+            var xmlEventReader = XMLInputFactory.newFactory().createXMLEventReader(xmlFileReader);
+            logger.info("Created.");
 
-        var xmlDocumentProcessor = new XMLDocumentProcessor();
-        var userEditingCollector = new UserEditingCollector();
-        var nodeKeyCollector = new NodeKeyCollector();
-        xmlDocumentProcessor.addCollector(userEditingCollector);
-        xmlDocumentProcessor.addCollector(nodeKeyCollector);
-        xmlDocumentProcessor.process(xmlEventReader);
+            var xmlDocumentProcessor = new XMLDocumentProcessor();
+            var userEditingCollector = new UserEditingCollector();
+            var nodeKeyCollector = new NodeKeyCollector();
+            xmlDocumentProcessor.addCollector(userEditingCollector);
+            xmlDocumentProcessor.addCollector(nodeKeyCollector);
+            xmlDocumentProcessor.process(xmlEventReader);
 
-        //userEditingCollector.getResults().entrySet().stream().sorted(Comparator.comparingInt((Map.Entry<String, Integer> entryA) -> entryA.getValue()).reversed().thenComparing(Map.Entry::getKey)).forEach(entry -> System.out.printf("%s: %d%s", entry.getKey(), entry.getValue(), System.lineSeparator()));
-        nodeKeyCollector.getResults().forEach((key, value) -> System.out.printf("%s: %d%s", key, value, System.lineSeparator()));
+            System.out.println("Commit count:");
+            System.out.println(userEditingCollector.getResults());
+
+            System.out.println();
+            System.out.println("Tag count:");
+            System.out.println(nodeKeyCollector.getResults());
+        } catch (FileNotFoundException e) {
+            System.out.printf("Error: file \"%s\" is not found", filePath);
+        } catch (Exception e) {
+            logger.fatal("Error while processing", e);
+            System.out.println("An error has occurred");
+        }
     }
 }
