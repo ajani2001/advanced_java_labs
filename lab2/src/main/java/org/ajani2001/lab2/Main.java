@@ -1,5 +1,7 @@
 package org.ajani2001.lab2;
 
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Unmarshaller;
 import org.apache.commons.cli.*;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.logging.log4j.LogManager;
@@ -38,12 +40,15 @@ public class Main {
             var xmlEventReader = XMLInputFactory.newFactory().createXMLEventReader(xmlFileReader);
             logger.info("Created.");
 
+            JAXBContext context = JAXBContext.newInstance("a");
+
+
             var xmlDocumentProcessor = new XMLDocumentProcessor();
             var userEditingCollector = new UserEditingCollector();
             var nodeKeyCollector = new NodeKeyCollector();
-            xmlDocumentProcessor.addCollector(userEditingCollector);
-            xmlDocumentProcessor.addCollector(nodeKeyCollector);
-            xmlDocumentProcessor.process(xmlEventReader);
+//            xmlDocumentProcessor.addCollector(userEditingCollector);
+//            xmlDocumentProcessor.addCollector(nodeKeyCollector);
+//            xmlDocumentProcessor.process(xmlEventReader);
 
             System.out.println("Commit count:");
             System.out.println(userEditingCollector.getResults());
