@@ -1,33 +1,37 @@
 package org.ajani2001.lab2;
 
 import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import org.ajani2001.Node;
+import org.ajani2001.lab2.node_processors.NodeProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 public class XMLDocumentProcessor {
     private static final Logger logger = LogManager.getLogger();
-    private final List<Node> nodes = new ArrayList<>();
+    private final List<NodeProcessor> nodeProcessors = new ArrayList<>();
 
-    public void process(XMLEventReader reader, JAXBContext context) throws XMLStreamException {
+    public void addNodeProcessor(NodeProcessor nodeProcessor) {
+        nodeProcessors.add(nodeProcessor);
+    }
+
+    public void process(XMLStreamReader reader, JAXBContext context) throws XMLStreamException, JAXBException {
         logger.info("Start processing");
         while (reader.hasNext()) {
-            var nextEvent = reader.peek();
-            if(nextEvent.isStartElement() && nextEvent.asStartElement().getName().getLocalPart().equals("node")) {
+            if(reader.getEventType() == XMLStreamConstants.START_ELEMENT && reader.getName().getLocalPart().equals("node")) {
                 var unmarshaller = context.createUnmarshaller();
-                var node = unmarshaller.unmarshal(reader, Node.class).getValue();
-                nodes.add(node);
+                var node = (Node) unmarshaller.unmarshal(reader);
+                nodeProcessors.forEach(nodeProcessor -> nodeProcessor.process(node));
+            } else {
+                reader.next();
             }
         }
         logger.info("finish processing");
-    }
-
-    public List<Node> getNodes() {
-        return nodes;
     }
 }

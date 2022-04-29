@@ -1,6 +1,7 @@
 package org.ajani2001.lab2;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DbInitializer {
@@ -10,30 +11,30 @@ public class DbInitializer {
         this.connection = connection;
     }
 
-    public void initialize() {
+    public void initialize() throws SQLException {
         dropTagsTable();
         dropNodesTable();
         createNodesTable();
         createTagsTable();
     }
 
-    private void dropNodesTable() {
+    private void dropNodesTable() throws SQLException {
         try(Statement statement = connection.createStatement()) {
-            statement.executeUpdate("DROP TABLE IF EXISTS nodes");
+            statement.executeUpdate("DROP TABLE IF EXISTS nodes;");
         }
     }
 
-    private void dropTagsTable() {
+    private void dropTagsTable() throws SQLException {
         try(Statement statement = connection.createStatement()) {
-            statement.executeUpdate("DROP TABLE IF EXISTS tags");
+            statement.executeUpdate("DROP TABLE IF EXISTS tags;");
         }
     }
 
-    private void createNodesTable() {
+    private void createNodesTable() throws SQLException {
         try(Statement statement = connection.createStatement()) {
             statement.executeUpdate("""
             CREATE TABLE nodes(
-                id BIGINT,
+                id BIGINT PRIMARY KEY,
                 lat DOUBLE PRECISION,
                 lon DOUBLE PRECISION,
                 user_name VARCHAR(50),
@@ -41,21 +42,21 @@ public class DbInitializer {
                 visible BOOLEAN,
                 version BIGINT,
                 changeset BIGINT,
-                timestamp TIMESTAMP
-            )
+                timestamp VARCHAR(20)
+            );
             """);
         }
     }
 
-    private void createTagsTable() {
+    private void createTagsTable() throws SQLException {
         try(Statement statement = connection.createStatement()) {
             statement.executeUpdate("""
             CREATE TABLE tags(
-                id BIGINT,
+                id BIGSERIAL PRIMARY KEY,
                 key VARCHAR(50),
-                value VARCHAR(50),
+                value TEXT,
                 node_id BIGINT REFERENCES nodes(id)
-            )
+            );
             """);
         }
     }
