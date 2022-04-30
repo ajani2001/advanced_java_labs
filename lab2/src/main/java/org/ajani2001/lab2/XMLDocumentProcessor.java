@@ -2,7 +2,7 @@ package org.ajani2001.lab2;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
-import org.ajani2001.Node;
+import org.ajani2001.lab2.xml.Node;
 import org.ajani2001.lab2.node_processors.NodeProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

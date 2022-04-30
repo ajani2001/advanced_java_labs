@@ -1,11 +1,13 @@
 package org.ajani2001.lab2;
 
 import jakarta.xml.bind.JAXBContext;
-import org.ajani2001.Node;
 import org.ajani2001.lab2.dao.NodeDao;
 import org.ajani2001.lab2.node_processors.NodeCollector;
 import org.ajani2001.lab2.node_processors.NodeKeyCollector;
 import org.ajani2001.lab2.node_processors.UserEditingCollector;
+import org.ajani2001.lab2.uploader.BatchNodesUploader;
+import org.ajani2001.lab2.uploader.PreparedStatementNodesUploader;
+import org.ajani2001.lab2.uploader.StatementNodesUploader;
 import org.apache.commons.cli.*;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.logging.log4j.LogManager;
@@ -46,7 +48,7 @@ public class Main {
             var namespaceAdapter = new NamespaceAdapder(xmlStreamReader);
             logger.info("Created.");
 
-            JAXBContext context = JAXBContext.newInstance("org.ajani2001");
+            JAXBContext context = JAXBContext.newInstance("org.ajani2001.lab2.xml");
             var xmlDocumentProcessor = new XMLDocumentProcessor();
             var userEditingCollector = new UserEditingCollector();
             var nodeKeyCollector = new NodeKeyCollector();
@@ -59,10 +61,25 @@ public class Main {
             var connection = DriverManager.getConnection("jdbc:postgresql://localhost:5435/postgres", "admin", "admin");
             var dbInitializer = new DbInitializer(connection);
             dbInitializer.initialize();
-            var nodeDao = new NodeDao(connection);
-            for (Node node : nodeCollector.getCollectedNodes()) {
-                nodeDao.saveNode(node);
-            }
+            var sampleData = nodeCollector.getCollectedNodes().subList(0, 10000).stream().map(NodeDao::new).toList();
+            var statementNodesUploader = new StatementNodesUploader(connection);
+            var t1 = System.currentTimeMillis();
+            statementNodesUploader.upload(sampleData);
+            var t2 = System.currentTimeMillis();
+            dbInitializer.initialize();
+            var preparedStatementNodesUploader = new PreparedStatementNodesUploader(connection);
+            var t3 = System.currentTimeMillis();
+            preparedStatementNodesUploader.upload(sampleData);
+            var t4 = System.currentTimeMillis();
+            dbInitializer.initialize();
+            var batchNodesUploader = new BatchNodesUploader(connection);
+            var t5 = System.currentTimeMillis();
+            batchNodesUploader.upload(sampleData);
+            var t6 = System.currentTimeMillis();
+
+            System.out.println(t2-t1);
+            System.out.println(t4-t3);
+            System.out.println(t6-t5);
 
             System.out.println("Commit count:");
             System.out.println(userEditingCollector.getResults());

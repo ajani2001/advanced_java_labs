@@ -1,7 +1,6 @@
 package org.ajani2001.lab2.node_processors;
 
-import org.ajani2001.Node;
-import org.ajani2001.lab2.node_processors.NodeProcessor;
+import org.ajani2001.lab2.xml.Node;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

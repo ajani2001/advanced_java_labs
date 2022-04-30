@@ -46,7 +46,7 @@ task xjc(type: JavaExec) {
             "-d",
             xjcOutputDir,
             "-p",
-            project.group.toString(),
+            project.getGroup() + "." + project.getName() + "." + "xml",
             "-encoding",
             "UTF-8",
             "-no-header",

@@ -1,6 +1,6 @@
 package org.ajani2001.lab2.node_processors;
 
-import org.ajani2001.Node;
+import org.ajani2001.lab2.xml.Node;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,9 @@ public class NodeCollector implements NodeProcessor {
 
     @Override
     public void process(Node node) {
-        collectedNodes.add(node);
+        if(collectedNodes.size() < 10000) {
+            collectedNodes.add(node);
+        }
     }
 
     public List<Node> getCollectedNodes() {

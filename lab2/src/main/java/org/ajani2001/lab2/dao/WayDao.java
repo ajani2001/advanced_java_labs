@@ -1,15 +1,15 @@
 package org.ajani2001.lab2.dao;
 
-import org.ajani2001.lab2.xml.Node;
+import org.ajani2001.lab2.xml.Nd;
+import org.ajani2001.lab2.xml.Way;
 
 import javax.xml.datatype.DatatypeFactory;
 import java.math.BigInteger;
 import java.util.List;
 
-public class NodeDao {
+public class WayDao {
+
     private Long id;
-    private Double lat;
-    private Double lon;
     private String userName;
     private Long userId;
     private Boolean visible;
@@ -17,61 +17,47 @@ public class NodeDao {
     private Long changeset;
     private String timestamp;
 
+    private List<Long> nodeIds;
     private List<TagDao> tags;
 
-    public NodeDao() {}
-
-    public NodeDao(Node xmlNode) {
-        this.id = xmlNode.getId().longValue();
-        this.lat = xmlNode.getLat();
-        this.lon = xmlNode.getLon();
-        this.userName = xmlNode.getUser();
-        this.userId = xmlNode.getUid().longValue();
-        this.visible = xmlNode.isVisible();
-        this.version = xmlNode.getVersion().longValue();
-        this.changeset = xmlNode.getChangeset().longValue();
-        this.timestamp = xmlNode.getTimestamp().toString();
-        this.tags = xmlNode.getTag().stream().map(TagDao::new).toList();
+    public WayDao() {}
+    
+    public WayDao(Way xmlWay) {
+        this.id = xmlWay.getId().longValue();
+        this.userName = xmlWay.getUser();
+        this.userId = xmlWay.getUid().longValue();
+        this.visible = xmlWay.isVisible();
+        this.version = xmlWay.getVersion().longValue();
+        this.changeset = xmlWay.getChangeset().longValue();
+        this.timestamp = xmlWay.getTimestamp().toString();
+        this.nodeIds = xmlWay.getNd().stream().map(nd -> nd.getRef().longValue()).toList();
+        this.tags = xmlWay.getTag().stream().map(TagDao::new).toList();
     }
 
-    public Node toXmlNode() {
-        var result = new Node();
+    public Way toXmlWay() {
+        var result = new Way();
         result.setId(BigInteger.valueOf(id));
-        result.setLat(lat);
-        result.setLon(lon);
         result.setUser(userName);
         result.setUid(BigInteger.valueOf(userId));
         result.setVisible(visible);
         result.setVersion(BigInteger.valueOf(version));
         result.setChangeset(BigInteger.valueOf(changeset));
         result.setTimestamp(DatatypeFactory.newDefaultInstance().newXMLGregorianCalendar(timestamp));
+        result.getNd().addAll(nodeIds.stream().map(nodeId -> {
+            var nodeRef = new Nd();
+            nodeRef.setRef(BigInteger.valueOf(nodeId));
+            return nodeRef;
+        }).toList());
         result.getTag().addAll(tags.stream().map(TagDao::toXmlTag).toList());
         return result;
     }
-
-
+    
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Double getLat() {
-        return lat;
-    }
-
-    public void setLat(Double lat) {
-        this.lat = lat;
-    }
-
-    public Double getLon() {
-        return lon;
-    }
-
-    public void setLon(Double lon) {
-        this.lon = lon;
     }
 
     public String getUserName() {
@@ -120,6 +106,14 @@ public class NodeDao {
 
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public List<Long> getNodeIds() {
+        return nodeIds;
+    }
+
+    public void setNodes(List<Long> nodeIds) {
+        this.nodeIds = nodeIds;
     }
 
     public List<TagDao> getTags() {
