@@ -4,6 +4,7 @@ import org.ajani2001.lab2.dao.NodeDao;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 public class StatementNodesUploader implements NodesUploader {
@@ -16,13 +17,14 @@ public class StatementNodesUploader implements NodesUploader {
 
     @Override
     public void upload(List<NodeDao> nodes) throws SQLException {
+        var statement = connection.createStatement();
         for (NodeDao nodeDao : nodes) {
-            uploadNode(nodeDao);
+            uploadNode(nodeDao, statement);
         }
+        connection.commit();
     }
 
-    private void uploadNode(NodeDao node) throws SQLException {
-        var statement = connection.createStatement();
+    private void uploadNode(NodeDao node, Statement statement) throws SQLException {
         statement.executeUpdate(
                 "INSERT INTO nodes VALUES (%d, %f, %f, '%s', %d, %s, %d, %d, '%s');"
                         .formatted(

@@ -10,7 +10,7 @@ public class NodeCollector implements NodeProcessor {
 
     @Override
     public void process(Node node) {
-        if(collectedNodes.size() < 10000) {
+        if(collectedNodes.size() < 40000) {
             collectedNodes.add(node);
         }
     }

@@ -7,22 +7,22 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-public class BatchNodesUploader implements NodesUploader {
+public class StatementBatchNodesUploader implements NodesUploader {
 
     private final Connection connection;
 
-    public BatchNodesUploader(Connection connection) {
+    public StatementBatchNodesUploader(Connection connection) {
         this.connection = connection;
     }
 
     @Override
     public void upload(List<NodeDao> nodes) throws SQLException {
-//        final var STEP = 100;
         var statement = connection.createStatement();
         for (NodeDao nodeDao : nodes) {
             addBatch(statement, nodeDao);
         }
         statement.executeBatch();
+        connection.commit();
     }
 
     private void addBatch(Statement statement, NodeDao node) throws SQLException {

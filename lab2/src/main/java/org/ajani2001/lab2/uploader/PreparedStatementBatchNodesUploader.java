@@ -5,13 +5,14 @@ import org.ajani2001.lab2.dao.NodeDao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
-public class PreparedStatementNodesUploader  implements NodesUploader {
+public class PreparedStatementBatchNodesUploader implements NodesUploader {
 
     private final Connection connection;
 
-    public PreparedStatementNodesUploader(Connection connection) {
+    public PreparedStatementBatchNodesUploader(Connection connection) {
         this.connection = connection;
     }
 
@@ -19,12 +20,13 @@ public class PreparedStatementNodesUploader  implements NodesUploader {
     public void upload(List<NodeDao> nodes) throws SQLException {
         var statement = connection.prepareStatement("INSERT INTO nodes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);");
         for (NodeDao nodeDao : nodes) {
-            uploadNode(statement, nodeDao);
+            addBatch(statement, nodeDao);
         }
+        statement.executeBatch();
         connection.commit();
     }
 
-    private void uploadNode(PreparedStatement statement, NodeDao node) throws SQLException {
+    private void addBatch(PreparedStatement statement, NodeDao node) throws SQLException {
         statement.setObject(1, node.getId());
         statement.setObject(2, node.getLat());
         statement.setObject(3, node.getLon());
@@ -34,6 +36,6 @@ public class PreparedStatementNodesUploader  implements NodesUploader {
         statement.setObject(7, node.getVersion());
         statement.setObject(8, node.getChangeset());
         statement.setObject(9, node.getTimestamp());
-        statement.executeUpdate();
+        statement.addBatch();
     }
 }

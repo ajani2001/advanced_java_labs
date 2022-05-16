@@ -34,6 +34,7 @@ public class DbInitializer {
         createRelationNodesTable();
         createRelationWaysTable();
         createRelationRelationsTable();
+        connection.commit();
     }
 
     private void dropNodesTable() throws SQLException {
